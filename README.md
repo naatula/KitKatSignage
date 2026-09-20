@@ -28,7 +28,7 @@ support/AndroidX libraries.
    adb install -r app/build/outputs/apk/debug/app-debug.apk
    ```
 
-   (For real deployments build a signed release and sideload that.)
+   For real deployments build a signed release instead — see below.
 
 2. Launch the app. On first run it asks for the address to display. Enter an
    `https://` URL — a bare `example.com/signage` is accepted and gets the
@@ -43,6 +43,25 @@ Signage → Clear data) or reinstall the app. The setup screen then comes back.
 The saved URL is excluded from Android backups (`allowBackup="false"`), so it
 cannot leak onto another device via a restore — this matters if your URL
 carries an access token.
+
+## Release builds
+
+`assembleRelease` signs the APK with a key described by `keystore.properties`
+in the project root, which is gitignored and never shared. Copy the template
+and point it at your own key:
+
+```
+cp keystore.properties.example keystore.properties
+keytool -genkeypair -v -keystore release.keystore.jks \
+    -alias kitkatsignage -keyalg RSA -keysize 2048 -validity 10000
+./gradlew assembleRelease
+```
+
+Without `keystore.properties` the signing config stays empty, so a fresh
+clone still builds — it just produces an unsigned release APK. Keep the
+keystore itself safe: Android refuses to update an installed app with one
+signed by a different key, so losing it means uninstalling every display
+before it can be updated again.
 
 ## Legacy devices and Let's Encrypt
 
