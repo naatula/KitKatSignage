@@ -2,6 +2,7 @@ package fi.naatula.kitkatsignage;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
 import android.net.Uri;
 
 /**
@@ -36,7 +37,7 @@ final class SignageConfig {
         // Treat a stored-but-unusable value the same as "not configured", so
         // a partially written preference file sends the user back to setup
         // instead of leaving a permanently black screen.
-        return normalize(url) != null ? url : null;
+        return normalize(context, url) != null ? url : null;
     }
 
     static void setStartUrl(Context context, String url) {
@@ -47,13 +48,15 @@ final class SignageConfig {
      * Cleans up user input and accepts it only if it is a usable https URL.
      *
      * A bare host ("example.com/signage") gets an https:// prefix, since that
-     * is how people type an address. http:// is rejected rather than upgraded:
-     * a cleartext page never triggers onReceivedSslError, so the certificate
-     * check in MainActivity would simply never run for it.
+     * is how people type an address. In a release build http:// is rejected
+     * rather than upgraded: a cleartext page never triggers
+     * onReceivedSslError, so the certificate check in MainActivity would
+     * simply never run for it. A debuggable build accepts it, so the app can
+     * be tested against a LAN dev stack that has no certificate at all.
      *
      * @return the normalized URL, or null if the input cannot be used.
      */
-    static String normalize(String input) {
+    static String normalize(Context context, String input) {
         if (input == null) {
             return null;
         }
@@ -69,8 +72,10 @@ final class SignageConfig {
         }
 
         Uri uri = Uri.parse(trimmed);
+        String scheme = uri.getScheme();
 
-        if (!"https".equalsIgnoreCase(uri.getScheme())) {
+        if (!"https".equalsIgnoreCase(scheme)
+                && !(isDebuggable(context) && "http".equalsIgnoreCase(scheme))) {
             return null;
         }
 
@@ -81,6 +86,15 @@ final class SignageConfig {
         }
 
         return trimmed;
+    }
+
+    /**
+     * Whether this is a debuggable build, which relaxes the https-only rule
+     * both here and in MainActivity's navigation check. A release build never
+     * accepts cleartext.
+     */
+    static boolean isDebuggable(Context context) {
+        return (context.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
     }
 
     /** The host the signage view is allowed to stay within. */

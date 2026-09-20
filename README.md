@@ -32,7 +32,8 @@ support/AndroidX libraries.
 
 2. Launch the app. On first run it asks for the address to display. Enter an
    `https://` URL — a bare `example.com/signage` is accepted and gets the
-   `https://` prefix; `http://` is rejected.
+   `https://` prefix; `http://` is rejected (except in a debuggable build,
+   see below).
 
 3. Tap **Start**. The URL is saved and the signage view opens. Every later
    launch goes straight to that URL.
@@ -62,6 +63,13 @@ clone still builds — it just produces an unsigned release APK. Keep the
 keystore itself safe: Android refuses to update an installed app with one
 signed by a different key, so losing it means uninstalling every display
 before it can be updated again.
+
+## Debug vs. release
+
+A debuggable build accepts `http://` as well as `https://`, so the app can be
+pointed at a LAN dev stack that has no certificate. A release build accepts
+neither cleartext URLs at setup nor cleartext navigation afterwards — see
+`normalize` in `SignageConfig` and `isAllowedUrl` in `MainActivity`.
 
 ## Legacy devices and Let's Encrypt
 

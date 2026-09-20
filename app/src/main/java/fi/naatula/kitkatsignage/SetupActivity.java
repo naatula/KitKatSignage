@@ -96,7 +96,7 @@ public class SetupActivity extends Activity {
     }
 
     private void save() {
-        String url = SignageConfig.normalize(urlField.getText().toString());
+        String url = SignageConfig.normalize(this, urlField.getText().toString());
 
         if (url == null) {
             errorView.setText(R.string.setup_invalid_url);

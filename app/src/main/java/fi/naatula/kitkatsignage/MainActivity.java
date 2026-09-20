@@ -43,6 +43,9 @@ public class MainActivity extends Activity {
     private String startUrl;
     private String allowedHost;
 
+    /** Read once in onCreate; see SignageConfig#isDebuggable. */
+    private boolean allowCleartext;
+
     private WebView webView;
     private boolean retryScheduled = false;
 
@@ -82,6 +85,7 @@ public class MainActivity extends Activity {
         }
 
         allowedHost = SignageConfig.hostOf(startUrl);
+        allowCleartext = SignageConfig.isDebuggable(this);
 
         enterImmersiveMode();
 
@@ -153,10 +157,14 @@ public class MainActivity extends Activity {
         String scheme = uri.getScheme();
         String host = uri.getHost();
 
-        // HTTPS only. Allowing "http" here would let the WebView navigate to
-        // a cleartext page, which never triggers onReceivedSslError, so the
-        // pinning check below would simply never run for that navigation.
-        boolean validScheme = "https".equalsIgnoreCase(scheme);
+        // HTTPS only in a release build. Allowing "http" there would let the
+        // WebView navigate to a cleartext page, which never triggers
+        // onReceivedSslError, so the pinning check below would simply never
+        // run for that navigation. A debuggable build accepts it so the app
+        // can be pointed at a LAN dev stack — including the page's own
+        // reloads, which are navigations and so pass through this check.
+        boolean validScheme = "https".equalsIgnoreCase(scheme)
+                || (allowCleartext && "http".equalsIgnoreCase(scheme));
 
         return validScheme
                 && host != null
