@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">KitKat Signage</string>
+
+    <string name="setup_title">KitKat Signage</string>
+    <string name="setup_hint">Enter the https address this screen should display. It is saved on the device and stays in use until the app is uninstalled or its data is cleared.</string>
+    <string name="setup_url_hint">https://example.com/signage</string>
+    <string name="setup_save">Start</string>
+    <string name="setup_invalid_url">Enter a valid https address, for example https://example.com/signage</string>
+
+    <string name="offline_message">Connecting…</string>
+    <string name="cert_error_title">Secure connection failed</string>
+    <string name="cert_error_message">The server certificate could not be verified.</string>
+</resources>
